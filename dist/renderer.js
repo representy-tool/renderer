@@ -8,6 +8,10 @@ var _ejs = require('ejs');
 
 var _ejs2 = _interopRequireDefault(_ejs);
 
+var _fs = require('fs');
+
+var _fs2 = _interopRequireDefault(_fs);
+
 var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
@@ -36,37 +40,39 @@ class Renderer {
 
   static render(payload, options) {
     return _asyncToGenerator(function* () {
-      if (_lodash2.default.isEmpty(options.engine)) {
-        options.engine = _path2.default.extname(options.file).slice(1);
+      let engine = options.engine;
+      if (_lodash2.default.isEmpty(engine)) {
+        engine = _path2.default.extname(options.file).slice(1);
       }
       const filePath = _path2.default.resolve(process.cwd(), options.file);
-      switch (options.engine) {
+      switch (engine) {
         case 'ejs':
         case 'html':
-          options.engine = 'ejs';
-          return new Promise(function (resolve, reject) {
-            _ejs2.default.renderFile(filePath, payload, options.options, function (err, output) {
-              if (err) {
-                return reject(err);
-              }
-              return resolve(output);
+          {
+            return new Promise(function (resolve, reject) {
+              _ejs2.default.renderFile(filePath, payload, options.options, function (err, output) {
+                if (err) {
+                  return reject(err);
+                }
+                return resolve(output);
+              });
             });
-          });
-          break;
+          }
         case 'markdown':
         case 'md':
-          options.engine = 'markdown';
-          const input = fs.readFileSync(filePath);
-          return _markdown.markdown.parse(input);
-          break;
+          {
+            const input = _fs2.default.readFileSync(filePath);
+            return _markdown.markdown.parse(input);
+          }
         case 'pug':
         case 'jade':
-          options.engine = 'pug';
-          return _pug2.default.renderFile(filePath, payload);
-          break;
+          {
+            return _pug2.default.renderFile(filePath, payload);
+          }
         default:
           logger.error('Not supported ext for template engine');
       }
+      return null;
     })();
   }
 }
