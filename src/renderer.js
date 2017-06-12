@@ -11,16 +11,22 @@ const logger = logWith(module);
 class Renderer {
 
   static async render(payload, options) {
-    let engine = options.engine;
-    if (_.isEmpty(engine)) {
-      engine = path.extname(options.file).slice(1);
+    let engine = _.get(options, 'engine');
+    const file = _.get(options, 'file');
+    const opts = _.get(options, 'options') || {};
+
+    if (_.isEmpty(file)) {
+      return null;
     }
-    const filePath = path.resolve(process.cwd(), options.file);
+    if (_.isEmpty(engine)) {
+      engine = path.extname(file).slice(1);
+    }
+    const filePath = path.resolve(process.cwd(), file);
     switch (engine) {
       case 'ejs':
       case 'html': {
         return new Promise((resolve, reject) => {
-          ejs.renderFile(filePath, payload, options.options, (err, output) => {
+          ejs.renderFile(filePath, payload, opts, (err, output) => {
             if (err) {
               return reject(err);
             }
