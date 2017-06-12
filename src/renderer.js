@@ -1,4 +1,5 @@
 import ejs from 'ejs';
+import fs from 'fs';
 import _ from 'lodash';
 import logWith from 'log-with';
 import { markdown } from 'markdown';
@@ -10,38 +11,36 @@ const logger = logWith(module);
 class Renderer {
 
   static async render(payload, options) {
-    if (_.isEmpty(options.engine)) {
-      options.engine = path.extname(options.file).slice(1);
+    let engine = options.engine;
+    if (_.isEmpty(engine)) {
+      engine = path.extname(options.file).slice(1);
     }
     const filePath = path.resolve(process.cwd(), options.file);
-    switch (options.engine) {
+    switch (engine) {
       case 'ejs':
-      case 'html':
-        options.engine = 'ejs';
+      case 'html': {
         return new Promise((resolve, reject) => {
           ejs.renderFile(filePath, payload, options.options, (err, output) => {
             if (err) {
               return reject(err);
             }
             return resolve(output);
-          })
+          });
         });
-        break;
+      }
       case 'markdown':
-      case 'md':
-        options.engine = 'markdown';
+      case 'md': {
         const input = fs.readFileSync(filePath);
         return markdown.parse(input);
-        break;
+      }
       case 'pug':
-      case 'jade':
-        options.engine = 'pug';
+      case 'jade': {
         return pug.renderFile(filePath, payload);
-        break;
+      }
       default:
         logger.error('Not supported ext for template engine');
     }
-
+    return null;
   }
 }
 
