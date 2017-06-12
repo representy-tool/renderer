@@ -40,17 +40,23 @@ class Renderer {
 
   static render(payload, options) {
     return _asyncToGenerator(function* () {
-      let engine = options.engine;
-      if (_lodash2.default.isEmpty(engine)) {
-        engine = _path2.default.extname(options.file).slice(1);
+      let engine = _lodash2.default.get(options, 'engine');
+      const file = _lodash2.default.get(options, 'file');
+      const opts = _lodash2.default.get(options, 'options') || {};
+
+      if (_lodash2.default.isEmpty(file)) {
+        return null;
       }
-      const filePath = _path2.default.resolve(process.cwd(), options.file);
+      if (_lodash2.default.isEmpty(engine)) {
+        engine = _path2.default.extname(file).slice(1);
+      }
+      const filePath = _path2.default.resolve(process.cwd(), file);
       switch (engine) {
         case 'ejs':
         case 'html':
           {
             return new Promise(function (resolve, reject) {
-              _ejs2.default.renderFile(filePath, payload, options.options, function (err, output) {
+              _ejs2.default.renderFile(filePath, payload, opts, function (err, output) {
                 if (err) {
                   return reject(err);
                 }
