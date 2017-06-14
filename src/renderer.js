@@ -10,14 +10,12 @@ const logger = logWith(module);
 
 class Renderer {
 
-  static async render(payload, options) {
-    let engine = _.get(options, 'engine');
-    const file = _.get(options, 'file');
-    const opts = _.get(options, 'options') || {};
-
+  static async render(payload, options = {}) {
+    const file = options.file;
     if (_.isEmpty(file)) {
       return null;
     }
+    let engine = options.engine;
     if (_.isEmpty(engine)) {
       engine = path.extname(file).slice(1);
     }
@@ -25,7 +23,7 @@ class Renderer {
     switch (engine) {
       case 'ejs':
       case 'html':
-        return this.ejs(filePath, payload, opts);
+        return this.ejs(filePath, payload, options.options);
       case 'markdown':
       case 'md':
         return this.md(filePath);
@@ -34,24 +32,19 @@ class Renderer {
         return this.pug(filePath, payload);
       default:
         logger.error('Not supported ext for template engine');
+        return null;
     }
-    return null;
   }
 
   static ejs(filePath, payload, opts) {
     return new Promise((resolve, reject) => {
-      ejs.renderFile(filePath, payload, opts, (err, output) => {
-        if (err) {
-          return reject(err);
-        }
-        return resolve(output);
-      });
+      ejs.renderFile(filePath, payload, opts,
+        (err, output) => (err ? reject(err) : resolve(output)));
     });
   }
 
   static md(filePath) {
-    const input = fs.readFileSync(filePath);
-    return markdown.parse(input);
+    return markdown.parse(fs.readFileSync(filePath));
   }
 
   static pug(filePath, payload) {
