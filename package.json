@@ -1,7 +1,7 @@
 {
   "name": "representy-tool-renderer",
   "version": "0.0.3",
-  "repository": "git@github.com:representy/representy-tool-renderer.git",
+  "repository": "git@github.com:representy-tool/renderer.git",
   "author": "Salim KAYABAŞI <salim.kayabasi@gmail.com>",
   "license": "MIT",
   "main": "dist/renderer.js",
