@@ -38,15 +38,15 @@ const payload = {
 const output = '<h6>HMTL TEST</h6>';
 
 describe('Renderer.render', () => {
-  test('no fıle', async () => {
+  test('no file', async () => {
     const result = await Renderer.render(payload);
     expect(result).toBeNull();
   });
-  test('unknown fıle ext', async () => {
+  test('unknown file ext', async () => {
     const result = await Renderer.render(payload, files.unknown);
     expect(result).toBeNull();
   });
-  test('unknown fıle path', async () => {
+  test('unknown file path', async () => {
     const result = await Renderer.render(payload, files.notExist);
     expect(result).toBeNull();
   });
