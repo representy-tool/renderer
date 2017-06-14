@@ -15,40 +15,54 @@ class Renderer {
     if (_.isEmpty(file)) {
       return null;
     }
-    let engine = options.engine;
-    if (_.isEmpty(engine)) {
-      engine = path.extname(file).slice(1);
+    const context = Renderer.readFile(file);
+    if (!context) {
+      return null;
     }
-    const filePath = path.resolve(process.cwd(), file);
+    const engine = Renderer.getEngine(options, file);
     switch (engine) {
       case 'ejs':
       case 'html':
-        return this.ejs(filePath, payload, options.options);
+        return Renderer.ejs(context, payload, options.options);
       case 'markdown':
       case 'md':
-        return this.md(filePath);
+        return Renderer.md(context, payload);
       case 'pug':
       case 'jade':
-        return this.pug(filePath, payload);
+        return Renderer.pug(context, payload);
       default:
         logger.error('Not supported ext for template engine');
         return null;
     }
   }
 
-  static ejs(filePath, payload, opts) {
-    return new Promise((resolve, reject) => {
-      ejs.renderFile(filePath, payload, opts,
-        (err, output) => (err ? reject(err) : resolve(output)));
-    });
+  static getEngine(options, file) {
+    let engine = options.engine;
+    if (_.isEmpty(engine)) {
+      engine = path.extname(file).slice(1);
+    }
+    return engine;
   }
 
-  static md(filePath) {
-    return markdown.parse(fs.readFileSync(filePath));
+  static readFile(file) {
+    try {
+      const filePath = path.resolve(process.cwd(), file);
+      return fs.readFileSync(filePath).toString();
+    } catch (e) {
+      return null;
+    }
   }
 
-  static pug(filePath, payload) {
-    return pug.renderFile(filePath, payload);
+  static ejs(context, payload, opts) {
+    return ejs.render(context, payload, opts).trim();
+  }
+
+  static md(context, payload) {
+    return _.template(markdown.toHTML(context))(payload);
+  }
+
+  static pug(context, payload) {
+    return pug.render(context, payload);
   }
 }
 
