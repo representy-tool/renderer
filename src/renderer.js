@@ -10,7 +10,7 @@ const logger = logWith(module);
 
 class Renderer {
 
-  static async render(payload, options = {}) {
+  static render(payload, options = {}) {
     const file = options.file;
     if (_.isEmpty(file)) {
       return null;
@@ -20,10 +20,14 @@ class Renderer {
       return null;
     }
     const engine = Renderer.getEngine(options, file);
+    return Renderer.renderByEngine(engine, context, payload);
+  }
+
+  static renderByEngine(engine, context, payload) {
     switch (engine) {
       case 'ejs':
       case 'html':
-        return Renderer.ejs(context, payload, options.options);
+        return Renderer.ejs(context, payload);
       case 'markdown':
       case 'md':
         return Renderer.md(context, payload);
