@@ -3,6 +3,7 @@ config/runtime.*
 config/*.json
 jest/
 build/
+coverage/
 
 ### Windows template
 # Windows thumbnail cache files
