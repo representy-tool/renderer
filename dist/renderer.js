@@ -32,54 +32,67 @@ var _pug2 = _interopRequireDefault(_pug);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
 const logger = (0, _logWith2.default)(module);
 
 class Renderer {
 
-  static render(payload, options) {
-    return _asyncToGenerator(function* () {
-      let engine = _lodash2.default.get(options, 'engine');
-      const file = _lodash2.default.get(options, 'file');
-      const opts = _lodash2.default.get(options, 'options') || {};
-
-      if (_lodash2.default.isEmpty(file)) {
-        return null;
-      }
-      if (_lodash2.default.isEmpty(engine)) {
-        engine = _path2.default.extname(file).slice(1);
-      }
-      const filePath = _path2.default.resolve(process.cwd(), file);
-      switch (engine) {
-        case 'ejs':
-        case 'html':
-          {
-            return new Promise(function (resolve, reject) {
-              _ejs2.default.renderFile(filePath, payload, opts, function (err, output) {
-                if (err) {
-                  return reject(err);
-                }
-                return resolve(output);
-              });
-            });
-          }
-        case 'markdown':
-        case 'md':
-          {
-            const input = _fs2.default.readFileSync(filePath);
-            return _markdown.markdown.parse(input);
-          }
-        case 'pug':
-        case 'jade':
-          {
-            return _pug2.default.renderFile(filePath, payload);
-          }
-        default:
-          logger.error('Not supported ext for template engine');
-      }
+  static render(payload, options = {}) {
+    const file = options.file;
+    if (_lodash2.default.isEmpty(file)) {
       return null;
-    })();
+    }
+    const context = Renderer.readFile(file);
+    if (!context) {
+      return null;
+    }
+    const engine = Renderer.getEngine(options, file);
+    return Renderer.renderByEngine(engine, context, payload);
+  }
+
+  static renderByEngine(engine, context, payload) {
+    switch (engine) {
+      case 'ejs':
+      case 'html':
+        return Renderer.ejs(context, payload);
+      case 'markdown':
+      case 'md':
+        return Renderer.md(context, payload);
+      case 'pug':
+      case 'jade':
+        return Renderer.pug(context, payload);
+      default:
+        logger.error('Not supported ext for template engine');
+        return null;
+    }
+  }
+
+  static getEngine(options, file) {
+    let engine = options.engine;
+    if (_lodash2.default.isEmpty(engine)) {
+      engine = _path2.default.extname(file).slice(1);
+    }
+    return engine;
+  }
+
+  static readFile(file) {
+    try {
+      const filePath = _path2.default.resolve(process.cwd(), file);
+      return _fs2.default.readFileSync(filePath).toString();
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static ejs(context, payload, opts) {
+    return _ejs2.default.render(context, payload, opts).trim();
+  }
+
+  static md(context, payload) {
+    return _lodash2.default.template(_markdown.markdown.toHTML(context))(payload);
+  }
+
+  static pug(context, payload) {
+    return _pug2.default.render(context, payload);
   }
 }
 
