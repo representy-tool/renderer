@@ -24,29 +24,38 @@ class Renderer {
     const filePath = path.resolve(process.cwd(), file);
     switch (engine) {
       case 'ejs':
-      case 'html': {
-        return new Promise((resolve, reject) => {
-          ejs.renderFile(filePath, payload, opts, (err, output) => {
-            if (err) {
-              return reject(err);
-            }
-            return resolve(output);
-          });
-        });
-      }
+      case 'html':
+        return this.ejs(filePath, payload, opts);
       case 'markdown':
-      case 'md': {
-        const input = fs.readFileSync(filePath);
-        return markdown.parse(input);
-      }
+      case 'md':
+        return this.md(filePath);
       case 'pug':
-      case 'jade': {
-        return pug.renderFile(filePath, payload);
-      }
+      case 'jade':
+        return this.pug(filePath, payload);
       default:
         logger.error('Not supported ext for template engine');
     }
     return null;
+  }
+
+  static ejs(filePath, payload, opts) {
+    return new Promise((resolve, reject) => {
+      ejs.renderFile(filePath, payload, opts, (err, output) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(output);
+      });
+    });
+  }
+
+  static md(filePath) {
+    const input = fs.readFileSync(filePath);
+    return markdown.parse(input);
+  }
+
+  static pug(filePath, payload) {
+    return pug.renderFile(filePath, payload);
   }
 }
 
